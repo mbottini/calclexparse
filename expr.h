@@ -7,139 +7,204 @@
 
 #define INDENT_LEVEL 4
 
-typedef std::unordered_map<std::string, Expr> expr_map;
-
 enum EVAL_RESULT {
+    FAILURE,
     SUCCESS,
     ASSIGN,
-    FAILURE
 };
+
+class Expr;
+typedef std::shared_ptr<Expr> Expr_ptr;
+typedef std::unordered_map<std::string, Expr_ptr> expr_map;
+typedef std::vector<std::unique_ptr<Token>> token_vec;
+typedef std::pair<Expr_ptr, size_t> parse_result;
+typedef std::pair<EVAL_RESULT, int> eval_pair;
 
 class Expr {
     public:
-        virtual std::pair<EVAL_RESULT, int> 
-            eval(expr_map& map = expr_map()) const = 0;
-        virtual std::ostream& print(std::ostream& os, indent = 0) const = 0;
+        virtual eval_pair 
+            eval(expr_map& map) = 0;
+        virtual std::ostream& print(std::ostream& os, int indent = 0) const = 0;
         ~Expr() {}
+};
+
+class Const : public Expr {
+    private:
+        int _data;
+    public:
+        Const(int i) {
+            _data = i;
+        }
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
+};
+
+class Var : public Expr {
+    private:
+        std::string _data;
+    public:
+        Var(const std::string& s) {
+            _data = s;
+        }
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
 };
 
 class Plus : public Expr {
     private:
-        std::unique_ptr<Expr> _e1, _e2;
+        Expr_ptr _e1, _e2;
     public:
-        Plus(std::unique_ptr<Expr> e1, e2) {
-            _e1 = std::move(e1);
-            _e2 = std::move(e2);
+        Plus(Expr_ptr &e1, Expr_ptr &e2) {
+            _e1 = e1;
+            _e2 = e2;
         }
-        std::pair<EVAL_RESULT, int> eval(expr_map& map) const;
-        std::ostream& print(std::ostream& os, indent) const;
+        Plus(Expr_ptr &&e1, Expr_ptr &&e2) {
+            _e1 = e1;
+            _e2 = e2;
+        }
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
 };
 
 class Minus : public Expr {
     private:
-        std::unique_ptr<Expr> _e1, _e2;
+        Expr_ptr _e1, _e2;
     public:
-        Minus(std::unique_ptr<Expr> &e1, &e2) {
-            _e1 = std::move(e1);
-            _e2 = std::move(e2);
+        Minus(Expr_ptr &e1, Expr_ptr &e2) {
+            _e1 = e1;
+            _e2 = e2;
         }
-        std::pair<EVAL_RESULT, int> eval(expr_map& map) const;
-        std::ostream& print(std::ostream& os, indent) const;
+        Minus(Expr_ptr &&e1, Expr_ptr &&e2) {
+            _e1 = e1;
+            _e2 = e2;
+        }
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
 };
 
 class Times : public Expr {
     private:
-        std::unique_ptr<Expr> _e1, _e2;
+        Expr_ptr _e1, _e2;
     public:
-        Times(std::unique_ptr<Expr> &e1, &e2) {
-            _e1 = std::move(e1);
-            _e2 = std::move(e2);
+        Times(Expr_ptr &e1, Expr_ptr &e2) {
+            _e1 = e1;
+            _e2 = e2;
         }
-        std::pair<EVAL_RESULT, int> eval(expr_map& map) const;
-        std::ostream& print(std::ostream& os, indent) const;
+        Times(Expr_ptr &&e1, Expr_ptr &&e2) {
+            _e1 = e1;
+            _e2 = e2;
+        }
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
 };
 
 class Div : public Expr {
     private:
-        std::unique_ptr<Expr> _e1, _e2;
+        Expr_ptr _e1, _e2;
     public:
-        Div(std::unique_ptr<Expr> &e1, &e2) {
-            _e1 = std::move(e1);
-            _e2 = std::move(e2);
+        Div(Expr_ptr &e1, Expr_ptr &e2) {
+            _e1 = e1;
+            _e2 = e2;
         }
-        std::pair<EVAL_RESULT, int> eval(expr_map& map) const;
-        std::ostream& print(std::ostream& os, indent) const;
+
+        Div(Expr_ptr &&e1, Expr_ptr &&e2) {
+            _e1 = e1;
+            _e2 = e2;
+        }
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
 };
 
 class Exp : public Expr {
     private:
-        std::unique_ptr<Expr> _e1, _e2;
+        Expr_ptr _e1, _e2;
     public:
-        Exp(std::unique_ptr<Expr> &e1, &e2) {
-            _e1 = std::move(e1);
-            _e2 = std::move(e2);
+        Exp(Expr_ptr &e1, Expr_ptr &e2) {
+            _e1 = e1;
+            _e2 = e2;
         }
-        std::pair<EVAL_RESULT, int> eval(expr_map& map) const;
-        std::ostream& print(std::ostream& os, indent) const;
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
 };
 
 class UMinus : public Expr {
     private:
-        std::unique_ptr<Expr> _e;
+        Expr_ptr _e;
     public:
-        UMinus(std::unique_ptr<Expr> &e) {
-            _e = std::move(e);
+        UMinus(Expr_ptr &e) {
+            _e = e;
         }
-        std::pair<EVAL_RESULT, int> eval(expr_map& map) const;
-        std::ostream& print(std::ostream& os, indent) const;
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
 };
 
 class UPlus : public Expr {
     private:
-        std::unique_ptr<Expr> _e;
+        Expr_ptr _e;
     public:
-        UPlus(std::unique_ptr<Expr> &e) {
-            _e = std::move(e);
+        UPlus(Expr_ptr &e) {
+            _e = e;
         }
-        std::pair<EVAL_RESULT, int> eval(expr_map& map) const;
-        std::ostream& print(std::ostream& os, indent) const;
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
 };
 
 class Assign : public Expr {
     private:
         std::string _var;
-        std::unique_ptr<Expr> _e;
+        Expr_ptr _e;
     public:
-        Assign(const std::string& s, std::unique_ptr<Expr> &e) {
-            _var = s;
-            _e = std::move(e);
+        Assign(Token *t, Expr_ptr &e) {
+            if(t->is_var()) {
+                _var = static_cast<TVar*>(t)->get_val();
+                _e = e;
+            }
+            else {
+                throw "MASSIVE FAILURE - non-var assigned to!";
+            }
         }
-        std::pair<EVAL_RESULT, int> eval(expr_map& map) const;
-        std::ostream& print(std::ostream& os, indent) const;
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
 };
 
-std::vector<std::unique_ptr<Expr>> 
-parseTokens(const std::vector<std::unique_ptr<Token>>& t_vec);
+std::vector<Expr_ptr> parseTokens(const token_vec& t_vec);
 
 /*
-Starting generator is E.
-E -> S | A
-
 A is Assignment.
-A -> Var = S
+A -> Var = S | S
 
 S is the Start of an Expression.
 Note that we've removed all left-recursive aspects of the grammar.
 
-S -> TS'
-S' -> + T S' | - T S' | epsilon
-T -> UT'
-T' -> * U T' | / U T' | epsilon
+S -> T S2
+S2 -> + T S2 | - T S2 | epsilon
+T -> U T2
+T2 -> * U T2 | / U T2 | epsilon
 U -> W ^ U | W
 W -> -W | +W | X
 X -> (S) -> Term
 */
 
+parse_result parseA(const token_vec& t_vec, size_t current_index);
 
+parse_result parseS(const token_vec& t_vec, size_t current_index);
+
+parse_result parseS2(const token_vec& t_vec, size_t current_index, Expr_ptr&& e);
+
+parse_result parseT(const token_vec& t_vec, size_t current_index);
+
+parse_result parseT2(const token_vec& t_vec, size_t current_index, Expr_ptr&& e);
+
+parse_result parseU(const token_vec& t_vec, size_t current_index);
+
+parse_result parseW(const token_vec& t_vec, size_t current_index);
+
+parse_result parseX(const token_vec& t_vec, size_t current_index);
+
+
+// Printing helper.
+
+std::ostream& print_spaces(std::ostream& os, int n);
+std::ostream& operator <<(std::ostream& os, const eval_pair &e);
 
 #endif
