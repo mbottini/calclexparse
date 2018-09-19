@@ -176,6 +176,7 @@ std::ostream& Const::print(std::ostream& os, int indent) const {
 std::ostream& Var::print(std::ostream& os, int indent) const {
     print_spaces(os, INDENT_LEVEL * indent);
     os << "(Var " << _data << ")";
+    return os;
 }
 
 std::ostream& Plus::print(std::ostream& os, int indent) const {
