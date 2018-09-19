@@ -335,7 +335,10 @@ eval_pair UPlus::eval(expr_map& map) {
 eval_pair Assign::eval(expr_map& map) {
     auto p = _e->eval(map);
     if(p.first != FAILURE) {
-        map.emplace(_var, _e);
+        auto result = map.emplace(_var, _e);
+        if(!result.second) {
+            result.first->second = _e;
+        }
         return eval_pair(ASSIGN, p.second);
     }
     return eval_pair(FAILURE, 0);
