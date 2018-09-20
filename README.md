@@ -24,11 +24,6 @@ Variables can be assigned to expressions. Note that variables can be assigned to
 other variables. If a variable's value changes, expressions that depend on the
 value will change.
 
-**TODO:** Change CFG to allow assignment inside expressions. It should be
-possible to do
-
-    x = y = 1
-
 Note that circular assignment is not allowed. Doing the following will result in
 a `CYCLE` evaluation.
 
