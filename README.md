@@ -24,11 +24,18 @@ Variables can be assigned to expressions. Note that variables can be assigned to
 other variables. If a variable's value changes, expressions that depend on the
 value will change.
 
-**BUG:** Right now, circular assignment is not detected. Doing the following is
-syntactically valid, and evaluating it will be Very Bad. do not do that please
-thank you
+**TODO:** Change CFG to allow assignment inside expressions. It should be
+possible to do
 
-    > x = 1; y = x; x = y; x
-    (Segmentation fault ayyy lmao)
+    x = y = 1
 
-Assignments evaluate to the expression that the variable is assigned to.
+Note that circular assignment is not allowed. Doing the following will result in
+a `CYCLE` evaluation.
+
+    > x = 1
+    ASSIGN 1
+    > y = x
+    ASSIGN 1
+    > x = y
+    CYCLE
+
