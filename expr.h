@@ -69,124 +69,91 @@ class Var : public Expr {
         }
 };
 
-class Plus : public Expr {
-    private:
+class BinaryOp : public Expr {
+    protected:
         Expr_ptr _e1, _e2;
     public:
-        Plus(Expr_ptr &e1, Expr_ptr &e2) {
+        BinaryOp(Expr_ptr &e1, Expr_ptr &e2) {
             _e1 = e1;
             _e2 = e2;
         }
-        Plus(Expr_ptr &&e1, Expr_ptr &&e2) {
+        BinaryOp(Expr_ptr &&e1, Expr_ptr &&e2) {
             _e1 = e1;
             _e2 = e2;
         }
-        eval_pair eval(expr_map& map);
-        std::ostream& print(std::ostream& os, int indent) const;
+        virtual eval_pair eval(expr_map& map) = 0;
+        virtual std::ostream& print(std::ostream& os, int indent) const = 0;
         bool has_cycle(expr_map& map, var_set& set) const {
             return _e1->has_cycle(map, set) || _e2->has_cycle(map, set);
         }
 };
+        
 
-class Minus : public Expr {
-    private:
-        Expr_ptr _e1, _e2;
+class Plus : public BinaryOp {
     public:
-        Minus(Expr_ptr &e1, Expr_ptr &e2) {
-            _e1 = e1;
-            _e2 = e2;
-        }
-        Minus(Expr_ptr &&e1, Expr_ptr &&e2) {
-            _e1 = e1;
-            _e2 = e2;
-        }
+        Plus(Expr_ptr &e1, Expr_ptr &e2) : BinaryOp(e1, e2) {}
+        Plus(Expr_ptr &&e1, Expr_ptr &&e2) : BinaryOp(e1, e2) {}
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
-        bool has_cycle(expr_map& map, var_set& set) const {
-            return _e1->has_cycle(map, set) || _e2->has_cycle(map, set);
-        }
 };
 
-class Times : public Expr {
-    private:
-        Expr_ptr _e1, _e2;
+class Minus : public BinaryOp {
     public:
-        Times(Expr_ptr &e1, Expr_ptr &e2) {
-            _e1 = e1;
-            _e2 = e2;
-        }
-        Times(Expr_ptr &&e1, Expr_ptr &&e2) {
-            _e1 = e1;
-            _e2 = e2;
-        }
+        Minus(Expr_ptr &e1, Expr_ptr &e2) : BinaryOp(e1, e2) {}
+        Minus(Expr_ptr &&e1, Expr_ptr &&e2) : BinaryOp(e1, e2) {}
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
-        bool has_cycle(expr_map& map, var_set& set) const {
-            return _e1->has_cycle(map, set) || _e2->has_cycle(map, set);
-        }
 };
 
-class Div : public Expr {
-    private:
-        Expr_ptr _e1, _e2;
+class Times : public BinaryOp {
     public:
-        Div(Expr_ptr &e1, Expr_ptr &e2) {
-            _e1 = e1;
-            _e2 = e2;
-        }
-
-        Div(Expr_ptr &&e1, Expr_ptr &&e2) {
-            _e1 = e1;
-            _e2 = e2;
-        }
+        Times(Expr_ptr &e1, Expr_ptr &e2) : BinaryOp(e1, e2) {}
+        Times(Expr_ptr &&e1, Expr_ptr &&e2) : BinaryOp(e1, e2) {}
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
-        bool has_cycle(expr_map& map, var_set& set) const {
-            return _e1->has_cycle(map, set) || _e2->has_cycle(map, set);
-        }
 };
 
-class Exp : public Expr {
-    private:
-        Expr_ptr _e1, _e2;
+class Div : public BinaryOp {
     public:
-        Exp(Expr_ptr &e1, Expr_ptr &e2) {
-            _e1 = e1;
-            _e2 = e2;
-        }
+        Div(Expr_ptr &e1, Expr_ptr &e2) : BinaryOp(e1, e2) {}
+        Div(Expr_ptr &&e1, Expr_ptr &&e2) : BinaryOp(e1, e2) {}
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
-        bool has_cycle(expr_map& map, var_set& set) const {
-            return _e1->has_cycle(map, set) || _e2->has_cycle(map, set);
-        }
 };
 
-class UMinus : public Expr {
-    private:
+class Exp : public BinaryOp {
+    public:
+        Exp(Expr_ptr &e1, Expr_ptr &e2) : BinaryOp(e1, e2) {}
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
+};
+
+class UnaryOp : public Expr {
+    protected:
         Expr_ptr _e;
     public:
-        UMinus(Expr_ptr &e) {
+        UnaryOp(Expr_ptr &e) {
             _e = e;
         }
-        eval_pair eval(expr_map& map);
-        std::ostream& print(std::ostream& os, int indent) const;
+        virtual eval_pair eval(expr_map& map) = 0;
+        virtual std::ostream& print(std::ostream& os, int indent) const = 0;
         bool has_cycle(expr_map& map, var_set& set) const {
             return _e->has_cycle(map, set);
         }
-};
+}; 
 
-class UPlus : public Expr {
-    private:
-        Expr_ptr _e;
+class UMinus : public UnaryOp {
     public:
-        UPlus(Expr_ptr &e) {
-            _e = e;
-        }
+        UMinus(Expr_ptr &e) : UnaryOp(e) {}
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
-        bool has_cycle(expr_map& map, var_set& set) const {
-            return _e->has_cycle(map, set);
-        }
+};
+
+class UPlus : public UnaryOp {
+    public:
+        UPlus(Expr_ptr &e) : UnaryOp(e) {}
+        eval_pair eval(expr_map& map);
+        std::ostream& print(std::ostream& os, int indent) const;
 };
 
 class Assign : public Expr {
