@@ -92,7 +92,7 @@ parse_result parseW(const token_vec& t_vec, size_t current_index) {
 
         if(t_vec[current_index]->is_minus()) {
             auto pair = parseW(t_vec, current_index+1);
-            return parse_result(Expr_ptr(new UPlus(pair.first)), pair.second);
+            return parse_result(Expr_ptr(new UMinus(pair.first)), pair.second);
         }
     }
 
