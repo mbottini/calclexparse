@@ -16,7 +16,7 @@ parse_result parseA(const token_vec& t_vec, size_t current_index) {
     // If the first two indices are a Var and an Equals, it's an assignment.
     if(t_vec.size() - current_index >= 2 &&
        t_vec[current_index]->is_var() && t_vec[current_index+1]->is_equals()) {
-        auto pair = parseS(t_vec, current_index+2);
+        auto pair = parseA(t_vec, current_index+2);
         return parse_result(Expr_ptr(
                              new Assign(t_vec[current_index].get(), pair.first)),
                              pair.second);
