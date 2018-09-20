@@ -337,7 +337,14 @@ eval_pair Assign::eval(expr_map& map) {
     if(p.first != FAILURE) {
         auto result = map.emplace(_var, _e);
         if(!result.second) {
+            // Now we check for cycles.
+            auto old_expr = result.first->second;
             result.first->second = _e;
+            var_set set;
+            if(_e->has_cycle(map, set)) {
+                result.first->second = old_expr;
+                return eval_pair(CYCLE, 0);
+            }
         }
         return eval_pair(ASSIGN, p.second);
     }
@@ -351,6 +358,9 @@ std::ostream& operator <<(std::ostream& os, const eval_pair &e) {
             break;
         case ASSIGN:
             os << "ASSIGN " << e.second;
+            break;
+        case CYCLE:
+            os << "CYCLE";
             break;
         case SUCCESS:
             os << e.second;

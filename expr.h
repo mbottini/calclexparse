@@ -3,6 +3,7 @@
 
 #include "tokens.h"
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #define INDENT_LEVEL 4
@@ -11,6 +12,7 @@ enum EVAL_RESULT {
     FAILURE,
     SUCCESS,
     ASSIGN,
+    CYCLE
 };
 
 class Expr;
@@ -19,12 +21,14 @@ typedef std::unordered_map<std::string, Expr_ptr> expr_map;
 typedef std::vector<std::unique_ptr<Token>> token_vec;
 typedef std::pair<Expr_ptr, size_t> parse_result;
 typedef std::pair<EVAL_RESULT, int> eval_pair;
+typedef std::unordered_set<std::string> var_set;
 
 class Expr {
     public:
         virtual eval_pair 
             eval(expr_map& map) = 0;
         virtual std::ostream& print(std::ostream& os, int indent = 0) const = 0;
+        virtual bool has_cycle(expr_map& map, var_set& set) const = 0;
         ~Expr() {}
 };
 
@@ -37,6 +41,7 @@ class Const : public Expr {
         }
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
+        bool has_cycle(expr_map& map, var_set& set) const { return false; }
 };
 
 class Var : public Expr {
@@ -48,6 +53,20 @@ class Var : public Expr {
         }
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
+        bool has_cycle(expr_map& map, var_set& set) const {
+            if(set.find(_data) != set.end()) {
+                return true;
+            }
+
+            set.insert(_data);
+
+            auto it = map.find(_data);
+            if(it != map.end()) {
+                return it->second->has_cycle(map, set);
+            }
+
+            return false;
+        }
 };
 
 class Plus : public Expr {
@@ -64,6 +83,9 @@ class Plus : public Expr {
         }
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
+        bool has_cycle(expr_map& map, var_set& set) const {
+            return _e1->has_cycle(map, set) || _e2->has_cycle(map, set);
+        }
 };
 
 class Minus : public Expr {
@@ -80,6 +102,9 @@ class Minus : public Expr {
         }
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
+        bool has_cycle(expr_map& map, var_set& set) const {
+            return _e1->has_cycle(map, set) || _e2->has_cycle(map, set);
+        }
 };
 
 class Times : public Expr {
@@ -96,6 +121,9 @@ class Times : public Expr {
         }
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
+        bool has_cycle(expr_map& map, var_set& set) const {
+            return _e1->has_cycle(map, set) || _e2->has_cycle(map, set);
+        }
 };
 
 class Div : public Expr {
@@ -113,6 +141,9 @@ class Div : public Expr {
         }
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
+        bool has_cycle(expr_map& map, var_set& set) const {
+            return _e1->has_cycle(map, set) || _e2->has_cycle(map, set);
+        }
 };
 
 class Exp : public Expr {
@@ -125,6 +156,9 @@ class Exp : public Expr {
         }
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
+        bool has_cycle(expr_map& map, var_set& set) const {
+            return _e1->has_cycle(map, set) || _e2->has_cycle(map, set);
+        }
 };
 
 class UMinus : public Expr {
@@ -136,6 +170,9 @@ class UMinus : public Expr {
         }
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
+        bool has_cycle(expr_map& map, var_set& set) const {
+            return _e->has_cycle(map, set);
+        }
 };
 
 class UPlus : public Expr {
@@ -147,6 +184,9 @@ class UPlus : public Expr {
         }
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
+        bool has_cycle(expr_map& map, var_set& set) const {
+            return _e->has_cycle(map, set);
+        }
 };
 
 class Assign : public Expr {
@@ -165,6 +205,13 @@ class Assign : public Expr {
         }
         eval_pair eval(expr_map& map);
         std::ostream& print(std::ostream& os, int indent) const;
+        bool has_cycle(expr_map& map, var_set& set) const {
+            if(set.find(_var) != set.end()) {
+                return true;
+            }
+            set.insert(_var);
+            return _e->has_cycle(map, set);
+        }
 };
 
 std::vector<Expr_ptr> parseTokens(const token_vec& t_vec);
