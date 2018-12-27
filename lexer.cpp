@@ -60,6 +60,7 @@ std::vector<std::unique_ptr<Token>> lex_str(std::istream& is) {
     std::vector<std::unique_ptr<Token>> t_vec;
     size_t current_index = 0;
     while(std::getline(is, line)) {
+        current_index = 0;
         while(current_index < line.length()) {
             // Currently a character?
             if(std::isalpha(line[current_index])) {
