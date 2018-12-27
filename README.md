@@ -34,3 +34,44 @@ a `CYCLE` evaluation.
     > x = y
     CYCLE
 
+# Main Program
+
+The lexer is built to take lines of input from an `istream`. With the way the
+`main` function is currently set up, `std::cin` is that `istream`. This means
+that you need to terminate your input with a newline and an EOF (Ctrl+D on
+Linux, Ctrl+Z on Windows). Example:
+
+    x = 5+4;
+    y = x^2;
+    z = 3*(y-4) + 2^(25 - x);
+    z;
+    ^D
+
+    // list of lexed tokens, used for debugging...
+
+    (Assign x:
+        (Plus
+            (Const 5)
+            (Const 4)))
+    Expression 1: ASSIGN 9
+    (Assign y:
+        (Exp
+            (Var x)
+            (Const 2)))
+    Expression 2: ASSIGN 81
+    (Assign z:
+        (Plus
+            (Times
+                (Const 3)
+                (Minus
+                    (Var y)
+                    (Const 4)))
+            (Exp
+                (Const 2)
+                (Minus
+                    (Const 25)
+                    (Var x)))))
+    Expression 3: ASSIGN 65767
+    (Var z)
+    Expression 4: 65767
+    
